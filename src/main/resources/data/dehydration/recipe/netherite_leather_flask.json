@@ -7,7 +7,7 @@
         "item": "minecraft:netherite_ingot"
     },
     "result": {
-        "item": "dehydration:netherite_leather_flask"
+        "id": "dehydration:netherite_leather_flask"
     },
     "template": {
         "item": "minecraft:netherite_upgrade_smithing_template"

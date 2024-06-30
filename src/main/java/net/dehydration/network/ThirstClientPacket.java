@@ -3,10 +3,12 @@ package net.dehydration.network;
 import java.util.ArrayList;
 import java.util.List;
 
-import it.unimi.dsi.fastutil.ints.IntList;
 import net.dehydration.DehydrationMain;
 import net.dehydration.access.ThirstManagerAccess;
 import net.dehydration.api.HydrationTemplate;
+import net.dehydration.network.packet.ExcludedThirstPacket;
+import net.dehydration.network.packet.HydrationTemplatePacket;
+import net.dehydration.network.packet.ThirstPacket;
 import net.dehydration.thirst.ThirstManager;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -19,35 +21,39 @@ import net.minecraft.registry.Registries;
 public class ThirstClientPacket {
 
     public static void init() {
-        ClientPlayNetworking.registerGlobalReceiver(ThirstServerPacket.THIRST_UPDATE, (client, handler, buffer, responseSender) -> {
-            int[] bufferArray = buffer.readIntArray();
-            int entityId = bufferArray[0];
-            int thirstLevel = bufferArray[1];
-            client.execute(() -> {
-                if (client.player.getWorld().getEntityById(entityId) != null) {
-                    PlayerEntity player = (PlayerEntity) client.player.getWorld().getEntityById(entityId);
-                    ThirstManager thirstManager = ((ThirstManagerAccess) player).getThirstManager();
+        ClientPlayNetworking.registerGlobalReceiver(ThirstPacket.PACKET_ID, (payload, context) -> {
+            int playerId = payload.playerId();
+            int thirstLevel = payload.thirstLevel();
+            context.client().execute(() -> {
+                if (context.player().getWorld().getEntityById(playerId) instanceof PlayerEntity playerEntity) {
+                    ThirstManager thirstManager = ((ThirstManagerAccess) playerEntity).getThirstManager();
                     thirstManager.setThirstLevel(thirstLevel);
                 }
             });
         });
-        ClientPlayNetworking.registerGlobalReceiver(ThirstServerPacket.EXCLUDED_SYNC, (client, handler, buffer, responseSender) -> {
-            boolean setThirst = buffer.readBoolean();
-            client.execute(() -> {
-                ((ThirstManagerAccess) client.player).getThirstManager().setThirst(setThirst);
+        ClientPlayNetworking.registerGlobalReceiver(ExcludedThirstPacket.PACKET_ID, (payload, context) -> {
+            int playerId = payload.playerId();
+            boolean excludedThirst = payload.excludingThirst();
+            context.client().execute(() -> {
+                if (context.player().getWorld().getEntityById(playerId) instanceof PlayerEntity playerEntity) {
+                    ((ThirstManagerAccess) playerEntity).getThirstManager().setThirst(excludedThirst);
+                }
             });
         });
-        ClientPlayNetworking.registerGlobalReceiver(ThirstServerPacket.HYDRATION_TEMPLATE_SYNC, (client, handler, buffer, responseSender) -> {
+        ClientPlayNetworking.registerGlobalReceiver(HydrationTemplatePacket.PACKET_ID, (payload, context) -> {
             List<HydrationTemplate> hydrationTemplates = new ArrayList<HydrationTemplate>();
-            IntList intList = buffer.readIntList();
-            for (int i = 0; i < intList.size(); i += 2) {
+            List<Integer> templateList = payload.templateList();
+
+            int count = 0;
+            for (int i = 0; i < templateList.size(); i += 2) {
                 List<Item> items = new ArrayList<Item>();
-                for (int u = 0; u < intList.getInt(i + 1); u++) {
-                    items.add(Registries.ITEM.get(buffer.readIdentifier()));
+                for (int u = 0; u < templateList.get(i + 1); u++) {
+                    items.add(Registries.ITEM.get(payload.templateIdentifiers().get(count)));
+                    count++;
                 }
-                hydrationTemplates.add(new HydrationTemplate(intList.getInt(i), items));
+                hydrationTemplates.add(new HydrationTemplate(templateList.get(i), items));
             }
-            client.execute(() -> {
+            context.client().execute(() -> {
                 DehydrationMain.HYDRATION_TEMPLATES.clear();
                 DehydrationMain.HYDRATION_TEMPLATES.addAll(hydrationTemplates);
             });

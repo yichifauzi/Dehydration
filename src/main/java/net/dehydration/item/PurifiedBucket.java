@@ -9,7 +9,6 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.FluidFillable;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.fluid.FlowableFluid;
 import net.minecraft.item.BucketItem;
 import net.minecraft.item.FluidModificationItem;
 import net.minecraft.item.Item;
@@ -56,8 +55,8 @@ public class PurifiedBucket extends Item implements FluidModificationItem {
             blockPos3 = blockState.getBlock() instanceof FluidFillable ? blockPos : blockPos2;
             if (this.placeFluid(user, world, blockPos3, blockHitResult)) {
                 this.onEmptied(user, world, itemStack, blockPos3);
-                if (user instanceof ServerPlayerEntity) {
-                    Criteria.PLACED_BLOCK.trigger((ServerPlayerEntity) user, blockPos3, itemStack);
+                if (user instanceof ServerPlayerEntity serverPlayerEntity) {
+                    Criteria.PLACED_BLOCK.trigger(serverPlayerEntity, blockPos3, itemStack);
                 }
                 user.incrementStat(Stats.USED.getOrCreateStat(this));
                 return TypedActionResult.success(BucketItem.getEmptiedStack(itemStack, user), world.isClient());
@@ -79,7 +78,7 @@ public class PurifiedBucket extends Item implements FluidModificationItem {
         BlockState blockState = world.getBlockState(pos);
         Block block = blockState.getBlock();
         boolean bl = blockState.canBucketPlace(FluidInit.PURIFIED_WATER);
-        bl2 = blockState.isAir() || bl || block instanceof FluidFillable && ((FluidFillable) ((Object) block)).canFillWithFluid(world, pos, blockState, FluidInit.PURIFIED_WATER);
+        bl2 = blockState.isAir() || bl || block instanceof FluidFillable fluidFillable && fluidFillable.canFillWithFluid(player, world, pos, blockState, FluidInit.PURIFIED_WATER);
         if (!bl2) {
             return hitResult != null && this.placeFluid(player, world, hitResult.getBlockPos().offset(hitResult.getSide()), null);
         }
@@ -93,8 +92,8 @@ public class PurifiedBucket extends Item implements FluidModificationItem {
             }
             return true;
         }
-        if (block instanceof FluidFillable) {
-            ((FluidFillable) ((Object) block)).tryFillWithFluid(world, pos, blockState, ((FlowableFluid) FluidInit.PURIFIED_WATER).getStill(false));
+        if (block instanceof FluidFillable fluidFillable) {
+            fluidFillable.tryFillWithFluid(world, pos, blockState, FluidInit.PURIFIED_WATER.getStill(false));
 
             this.playEmptyingSound(player, world, pos);
             return true;

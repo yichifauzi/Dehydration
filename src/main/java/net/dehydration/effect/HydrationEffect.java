@@ -13,10 +13,11 @@ public class HydrationEffect extends StatusEffect {
     }
 
     @Override
-    public void applyUpdateEffect(LivingEntity entity, int amplifier) {
+    public boolean applyUpdateEffect(LivingEntity entity, int amplifier) {
         if (!entity.getWorld().isClient() && entity instanceof PlayerEntity player) {
             ((ThirstManagerAccess) player).getThirstManager().add(amplifier + 1);
         }
+        return super.applyUpdateEffect(entity, amplifier);
     }
 
     @Override

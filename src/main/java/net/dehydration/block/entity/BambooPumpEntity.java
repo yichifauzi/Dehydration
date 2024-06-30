@@ -6,6 +6,7 @@ import net.dehydration.init.ItemInit;
 import net.dehydration.item.LeatherFlask;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.component.type.PotionContentsComponent;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.Inventories;
 import net.minecraft.inventory.Inventory;
@@ -13,7 +14,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
-import net.minecraft.potion.PotionUtil;
+import net.minecraft.registry.RegistryWrapper.WrapperLookup;
 import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -29,16 +30,16 @@ public class BambooPumpEntity extends BlockEntity implements Inventory {
     }
 
     @Override
-    public void readNbt(NbtCompound nbt) {
-        super.readNbt(nbt);
+    public void readNbt(NbtCompound nbt, WrapperLookup registryLookup) {
+        super.readNbt(nbt, registryLookup);
         this.inventory.clear();
-        Inventories.readNbt(nbt, inventory);
+        Inventories.readNbt(nbt, inventory, registryLookup);
     }
 
     @Override
-    public void writeNbt(NbtCompound nbt) {
-        super.writeNbt(nbt);
-        Inventories.writeNbt(nbt, inventory);
+    public void writeNbt(NbtCompound nbt, WrapperLookup registryLookup) {
+        super.writeNbt(nbt, registryLookup);
+        Inventories.writeNbt(nbt, inventory, registryLookup);
     }
 
     @Override
@@ -78,8 +79,9 @@ public class BambooPumpEntity extends BlockEntity implements Inventory {
                     cooldown = ConfigInit.CONFIG.pump_cooldown;
                 }
             } else if (itemStack.isOf(Items.GLASS_BOTTLE)) {
-                if (!this.world.isClient())
-                    setStack(0, PotionUtil.setPotion(new ItemStack(Items.POTION), ItemInit.PURIFIED_WATER));
+                if (!this.world.isClient()) {
+                    setStack(0, PotionContentsComponent.createStack(Items.POTION, ItemInit.PURIFIED_WATER));
+                }
                 pumpCount = 0;
                 cooldown = ConfigInit.CONFIG.pump_cooldown;
             } else if (itemStack.getItem() instanceof LeatherFlask) {
@@ -148,8 +150,8 @@ public class BambooPumpEntity extends BlockEntity implements Inventory {
     }
 
     @Override
-    public NbtCompound toInitialChunkDataNbt() {
-        return this.createNbt();
+    public NbtCompound toInitialChunkDataNbt(WrapperLookup registryLookup) {
+        return this.createNbt(registryLookup);
     }
 
     public void increasePumpCount(int count) {

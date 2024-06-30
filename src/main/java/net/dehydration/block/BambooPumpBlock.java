@@ -4,9 +4,12 @@ import java.util.List;
 
 import org.jetbrains.annotations.Nullable;
 
+import com.mojang.serialization.MapCodec;
+
 import net.dehydration.block.entity.BambooPumpEntity;
 import net.dehydration.init.BlockInit;
 import net.dehydration.init.ConfigInit;
+import net.dehydration.init.ItemInit;
 import net.dehydration.item.LeatherFlask;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockRenderType;
@@ -30,7 +33,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.loot.context.LootContextParameters;
 import net.minecraft.loot.context.LootContextParameterSet.Builder;
-import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.tag.FluidTags;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
@@ -39,10 +41,10 @@ import net.minecraft.state.property.BooleanProperty;
 import net.minecraft.state.property.DirectionProperty;
 import net.minecraft.state.property.Properties;
 import net.minecraft.text.Text;
-import net.minecraft.util.ActionResult;
 import net.minecraft.util.BlockMirror;
 import net.minecraft.util.BlockRotation;
 import net.minecraft.util.Hand;
+import net.minecraft.util.ItemActionResult;
 import net.minecraft.util.ItemScatterer;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
@@ -61,6 +63,7 @@ public class BambooPumpBlock extends BlockWithEntity {
     public static final BooleanProperty EXTENDED = Properties.EXTENDED;
     public static final BooleanProperty ATTACHED = Properties.ATTACHED;
     private static final VoxelShape SHAPE = Block.createCuboidShape(4.0, 0.0, 4.0, 12.0, 16.0, 12.0);
+    public static final MapCodec<BambooPumpBlock> CODEC = BambooPumpBlock.createCodec(BambooPumpBlock::new);
 
     public BambooPumpBlock(Settings settings) {
         super(settings);
@@ -78,7 +81,7 @@ public class BambooPumpBlock extends BlockWithEntity {
     }
 
     @Override
-    public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
+    public ItemActionResult onUseWithItem(ItemStack stack, BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
         BambooPumpEntity bambooPumpEntity = (BambooPumpEntity) world.getBlockEntity(pos);
         if (bambooPumpEntity != null) {
             ItemStack itemStack = bambooPumpEntity.getStack(0);
@@ -95,7 +98,7 @@ public class BambooPumpBlock extends BlockWithEntity {
                             world.setBlockState(pos, state.with(ATTACHED, true), Block.NOTIFY_LISTENERS);
                         }
                     }
-                    return ActionResult.success(world.isClient());
+                    return ItemActionResult.success(world.isClient());
                 }
                 // can get used to place a water source block infront of the pump
                 // else {
@@ -113,7 +116,7 @@ public class BambooPumpBlock extends BlockWithEntity {
                         bambooPumpEntity.clear();
                         world.setBlockState(pos, state.with(ATTACHED, false).with(EXTENDED, false), Block.NOTIFY_LISTENERS);
                     }
-                    return ActionResult.success(world.isClient());
+                    return ItemActionResult.success(world.isClient());
                 }
                 if (itemStack.isOf(Items.BUCKET) || itemStack.isOf(Items.GLASS_BOTTLE) || (itemStack.getItem() instanceof LeatherFlask && !LeatherFlask.isFlaskFull(itemStack))) {
                     if (ConfigInit.CONFIG.pump_requires_water) {
@@ -132,7 +135,7 @@ public class BambooPumpBlock extends BlockWithEntity {
                             } else {
                                 player.sendMessage(Text.translatable("block.dehydration.bamboo_pump.no_water"), true);
                             }
-                            return ActionResult.FAIL;
+                            return ItemActionResult.FAIL;
                         }
                     }
                     if (ConfigInit.CONFIG.pump_cooldown != 0 && bambooPumpEntity.getCooldown() > 0) {
@@ -143,7 +146,7 @@ public class BambooPumpBlock extends BlockWithEntity {
                         } else {
                             player.sendMessage(Text.translatable("block.dehydration.bamboo_pump.cooldown", bambooPumpEntity.getCooldown() / 20), true);
                         }
-                        return ActionResult.FAIL;
+                        return ItemActionResult.FAIL;
                     }
 
                     if (state.get(EXTENDED)) {
@@ -156,13 +159,13 @@ public class BambooPumpBlock extends BlockWithEntity {
                     } else {
                         world.setBlockState(pos, state.with(EXTENDED, !state.get(EXTENDED)), Block.NOTIFY_LISTENERS);
                     }
-                    return ActionResult.success(world.isClient());
+                    return ItemActionResult.success(world.isClient());
                 }
             }
 
         }
 
-        return ActionResult.FAIL;
+        return ItemActionResult.FAIL;
 
     }
 
@@ -190,7 +193,7 @@ public class BambooPumpBlock extends BlockWithEntity {
     }
 
     @Override
-    public boolean canPathfindThrough(BlockState state, BlockView world, BlockPos pos, NavigationType type) {
+    protected boolean canPathfindThrough(BlockState state, NavigationType type) {
         return false;
     }
 
@@ -240,9 +243,7 @@ public class BambooPumpBlock extends BlockWithEntity {
             if (stacks.get(i).getItem() instanceof BlockItem blockItem && blockItem.getBlock().equals(BlockInit.BAMBOO_PUMP_BLOCK)
                     && builder.get(LootContextParameters.BLOCK_ENTITY) instanceof BambooPumpEntity bambooPumpEntity) {
                 ItemStack stack = stacks.get(i);
-                NbtCompound nbtCompound = stack.getOrCreateNbt();
-                nbtCompound.putInt("Cooldown", bambooPumpEntity.getCooldown());
-                stack.setNbt(nbtCompound);
+                stack.set(ItemInit.COOLDOWN, bambooPumpEntity.getCooldown());
                 break;
             }
         }
@@ -252,27 +253,35 @@ public class BambooPumpBlock extends BlockWithEntity {
     @Override
     public void onPlaced(World world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack itemStack) {
         super.onPlaced(world, pos, state, placer, itemStack);
-        if (itemStack.hasNbt() && itemStack.getNbt().contains("Cooldown") && world.getBlockEntity(pos) instanceof BambooPumpEntity bambooPumpEntity) {
-            bambooPumpEntity.setCooldown(itemStack.getNbt().getInt("Cooldown"));
+        if (itemStack.get(ItemInit.COOLDOWN) != null && world.getBlockEntity(pos) instanceof BambooPumpEntity bambooPumpEntity) {
+            bambooPumpEntity.setCooldown(itemStack.get(ItemInit.COOLDOWN));
         }
     }
 
     @Nullable
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type) {
-        return checkType(type, BlockInit.BAMBOO_PUMP_ENTITY, world.isClient() ? BambooPumpEntity::clientTick : BambooPumpEntity::serverTick);
+        return validateTicker(type, BlockInit.BAMBOO_PUMP_ENTITY, world.isClient() ? BambooPumpEntity::clientTick : BambooPumpEntity::serverTick);
     }
 
     @Override
     public void onBlockBreakStart(BlockState state, World world, BlockPos pos, PlayerEntity player) {
-        if (world.isClient()) return;
+        if (world.isClient())
+            return;
         BambooPumpEntity bambooPumpEntity = (BambooPumpEntity) world.getBlockEntity(pos);
-        if (bambooPumpEntity == null) return;
+        if (bambooPumpEntity == null)
+            return;
         ItemStack itemStack = bambooPumpEntity.getStack(0);
-        if (itemStack.isEmpty()) return;
+        if (itemStack.isEmpty())
+            return;
         if (player.giveItemStack(itemStack)) {
             bambooPumpEntity.clear();
             world.setBlockState(pos, state.with(ATTACHED, false).with(EXTENDED, false), Block.NOTIFY_LISTENERS);
         }
+    }
+
+    @Override
+    protected MapCodec<? extends BlockWithEntity> getCodec() {
+        return CODEC;
     }
 }

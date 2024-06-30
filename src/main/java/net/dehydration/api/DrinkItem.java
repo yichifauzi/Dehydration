@@ -1,6 +1,8 @@
 package net.dehydration.api;
 
 import net.minecraft.advancement.criterion.Criteria;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.FoodComponent;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
@@ -40,9 +42,10 @@ public class DrinkItem extends Item {
             // Drinks are not available in creative mode
             if (!playerEntity.getAbilities().creativeMode) {
                 // The drink also has to have a FoodComponent
-                if (isFood()) {
+                FoodComponent foodComponent = stack.get(DataComponentTypes.FOOD);
+                if (foodComponent != null) {
                     DrinkEvent.EVENT.invoker().onDrink(stack, playerEntity);
-                    user.eatFood(world, stack);
+                    user.eatFood(world, stack, foodComponent);
                 }
             }
         }

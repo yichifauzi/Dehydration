@@ -13,7 +13,8 @@ import net.dehydration.init.ConfigInit;
 import net.dehydration.init.EffectInit;
 import net.dehydration.misc.ThirstTooltipData;
 import net.dehydration.thirst.ThirstManager;
-import net.minecraft.client.item.TooltipData;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.PotionContentsComponent;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.player.PlayerEntity;
@@ -22,9 +23,10 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.item.PotionItem;
 import net.minecraft.item.ThrowablePotionItem;
+import net.minecraft.item.tooltip.TooltipData;
 import net.minecraft.potion.Potion;
-import net.minecraft.potion.PotionUtil;
 import net.minecraft.potion.Potions;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.registry.tag.FluidTags;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
@@ -58,8 +60,8 @@ public abstract class PotionItemMixin extends Item {
     @Inject(method = "finishUsing", at = @At(value = "HEAD"))
     public void finishUsingMixin(ItemStack stack, World world, LivingEntity user, CallbackInfoReturnable<ItemStack> info) {
         if (user instanceof PlayerEntity player) {
-            Potion potion = PotionUtil.getPotion(stack);
-            if (!world.isClient() && this.isBadPotion(potion) && world.random.nextFloat() >= ConfigInit.CONFIG.potion_bad_thirst_chance) {
+            PotionContentsComponent potionContentsComponent = stack.getOrDefault(DataComponentTypes.POTION_CONTENTS, PotionContentsComponent.DEFAULT);
+            if (!world.isClient() && this.isBadPotion(potionContentsComponent.potion().get()) && world.random.nextFloat() >= ConfigInit.CONFIG.potion_bad_thirst_chance) {
                 player.addStatusEffect(new StatusEffectInstance(EffectInit.THIRST, ConfigInit.CONFIG.potion_bad_thirst_duration, 0, false, false, true));
             }
             ThirstManager thirstManager = ((ThirstManagerAccess) player).getThirstManager();
@@ -77,14 +79,10 @@ public abstract class PotionItemMixin extends Item {
         }
     }
 
-    private boolean isBadPotion(Potion potion) {
-        if (potion == Potions.WATER || potion == Potions.AWKWARD || potion == Potions.THICK || potion == Potions.HARMING || potion == Potions.LONG_POISON || potion == Potions.LONG_SLOWNESS
+    private boolean isBadPotion(RegistryEntry<Potion> potion) {
+        return potion == Potions.WATER || potion == Potions.AWKWARD || potion == Potions.THICK || potion == Potions.HARMING || potion == Potions.LONG_POISON || potion == Potions.LONG_SLOWNESS
                 || potion == Potions.LONG_WEAKNESS || potion == Potions.MUNDANE || potion == Potions.POISON || potion == Potions.SLOWNESS || potion == Potions.STRONG_HARMING
-                || potion == Potions.STRONG_POISON || potion == Potions.STRONG_SLOWNESS || potion == Potions.WEAKNESS) {
-            return true;
-        } else {
-            return false;
-        }
+                || potion == Potions.STRONG_POISON || potion == Potions.STRONG_SLOWNESS || potion == Potions.WEAKNESS;
     }
 
     @Override
@@ -101,7 +99,7 @@ public abstract class PotionItemMixin extends Item {
             if (thirstQuench == 0) {
                 thirstQuench = ConfigInit.CONFIG.potion_thirst_quench;
             }
-            if (isBadPotion(PotionUtil.getPotion(stack))) {
+            if (isBadPotion(stack.getOrDefault(DataComponentTypes.POTION_CONTENTS, PotionContentsComponent.DEFAULT).potion().get())) {
                 return Optional.of(new ThirstTooltipData(2, thirstQuench));
             }
             return Optional.of(new ThirstTooltipData(0, thirstQuench));

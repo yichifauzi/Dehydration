@@ -2,10 +2,10 @@
   "type": "minecraft:crafting_shapeless",
   "ingredients": [
     {
-      "item": "dehydration:golden_leather_flask"
+      "item": "dehydration:diamond_leather_flask"
     }
   ],
   "result": {
-    "item": "dehydration:golden_leather_flask"
+    "id": "dehydration:diamond_leather_flask"
   }
 }

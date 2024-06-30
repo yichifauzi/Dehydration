@@ -6,6 +6,7 @@ import net.dehydration.init.ConfigInit;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.registry.RegistryWrapper.WrapperLookup;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
@@ -18,14 +19,14 @@ public class CampfireCauldronEntity extends BlockEntity {
     }
 
     @Override
-    public void readNbt(NbtCompound tag) {
-        super.readNbt(tag);
+    public void readNbt(NbtCompound tag, WrapperLookup registryLookup) {
+        super.readNbt(tag, registryLookup);
         this.isBoiled = tag.getBoolean("Boiled");
     }
 
     @Override
-    public void writeNbt(NbtCompound tag) {
-        super.writeNbt(tag);
+    public void writeNbt(NbtCompound tag, WrapperLookup registryLookup) {
+        super.writeNbt(tag, registryLookup);
         tag.putBoolean("Boiled", isBoiled);
     }
 

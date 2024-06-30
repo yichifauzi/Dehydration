@@ -20,10 +20,6 @@ public class FluidInit {
     public static final FlowableFluid PURIFIED_WATER = register("dehydration:purified_water", new PurifiedWaterFluid.Still());
 
     public static void init() {
-        initFluidStorage();
-    }
-
-    private static void initFluidStorage() {
         FluidStorage.GENERAL_COMBINED_PROVIDER.register(context -> {
             if (context.getItemVariant().getItem() instanceof PurifiedBucket bucketItem) {
                 Fluid bucketFluid = FluidInit.PURIFIED_WATER;

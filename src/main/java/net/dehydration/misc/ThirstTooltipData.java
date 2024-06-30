@@ -1,6 +1,6 @@
 package net.dehydration.misc;
 
-import net.minecraft.client.item.TooltipData;
+import net.minecraft.item.tooltip.TooltipData;
 
 public class ThirstTooltipData implements TooltipData {
 

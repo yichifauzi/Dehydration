@@ -16,7 +16,7 @@ import net.minecraft.world.Difficulty;
 public class ThirstManager {
 
     // Damage Type
-    public static final RegistryKey<DamageType> THIRST = RegistryKey.of(RegistryKeys.DAMAGE_TYPE, new Identifier("dehydration", "thirst"));
+    public static final RegistryKey<DamageType> THIRST = RegistryKey.of(RegistryKeys.DAMAGE_TYPE, Identifier.of("dehydration", "thirst"));
 
     public float dehydration;
     private boolean hasThirst = true;

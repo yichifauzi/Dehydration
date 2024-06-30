@@ -12,11 +12,12 @@ import net.dehydration.access.ThirstManagerAccess;
 import net.dehydration.init.ConfigInit;
 import net.dehydration.init.TagInit;
 import net.dehydration.misc.ThirstTooltipData;
-import net.minecraft.client.item.TooltipData;
+import net.minecraft.component.DataComponentTypes;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.tooltip.TooltipData;
 import net.minecraft.world.World;
 
 @Mixin(Item.class)
@@ -24,7 +25,7 @@ public class ItemMixin {
 
     @Inject(method = "finishUsing", at = @At(value = "HEAD"))
     private void finishUsingMixin(ItemStack stack, World world, LivingEntity user, CallbackInfoReturnable<ItemStack> info) {
-        if (!stack.isFood() && user instanceof PlayerEntity player) {
+        if (stack.get(DataComponentTypes.FOOD) == null && user instanceof PlayerEntity player) {
             int thirstQuench = 0;
             if (stack.isIn(TagInit.HYDRATING_STEW)) {
                 thirstQuench = ConfigInit.CONFIG.stew_thirst_quench;

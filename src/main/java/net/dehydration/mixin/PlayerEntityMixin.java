@@ -14,6 +14,7 @@ import net.dehydration.access.ThirstManagerAccess;
 import net.dehydration.init.ConfigInit;
 import net.dehydration.init.TagInit;
 import net.dehydration.thirst.ThirstManager;
+import net.minecraft.component.type.FoodComponent;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.HungerManager;
@@ -95,7 +96,7 @@ public abstract class PlayerEntityMixin extends LivingEntity implements ThirstMa
     }
 
     @Inject(method = "eatFood", at = @At(value = "HEAD"))
-    private void eatFoodMixin(World world, ItemStack stack, CallbackInfoReturnable<ItemStack> info) {
+    private void eatFoodMixin(World world, ItemStack stack, FoodComponent foodComponent, CallbackInfoReturnable<ItemStack> info) {
         int thirstQuench = 0;
         if (stack.isIn(TagInit.HYDRATING_STEW)) {
             thirstQuench = ConfigInit.CONFIG.stew_thirst_quench;
@@ -122,8 +123,9 @@ public abstract class PlayerEntityMixin extends LivingEntity implements ThirstMa
                 break;
             }
         }
-        if (thirstQuench > 0)
+        if (thirstQuench > 0) {
             ((ThirstManagerAccess) (PlayerEntity) (Object) this).getThirstManager().add(thirstQuench);
+        }
     }
 
     @Override

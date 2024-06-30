@@ -4,32 +4,41 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.UnaryOperator;
 
 import net.dehydration.item.HandbookItem;
 import net.dehydration.item.LeatherFlask;
 import net.dehydration.item.PurifiedBucket;
 import net.dehydration.item.WaterBowlItem;
+import net.dehydration.item.component.FlaskComponent;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
+import net.minecraft.component.ComponentType;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.network.codec.PacketCodecs;
 import net.minecraft.potion.Potion;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.dynamic.Codecs;
 
 public class ItemInit {
     // Item Group
-    public static final RegistryKey<ItemGroup> DEHYDRATION_ITEM_GROUP = RegistryKey.of(RegistryKeys.ITEM_GROUP, new Identifier("dehydration", "item_group"));
+    public static final RegistryKey<ItemGroup> DEHYDRATION_ITEM_GROUP = RegistryKey.of(RegistryKeys.ITEM_GROUP, Identifier.of("dehydration", "item_group"));
     // Map and List
     private static final Map<Identifier, Item> ITEMS = new LinkedHashMap<>();
     public static final List<Item> FLASK_ITEM_LIST = new ArrayList<Item>();
+    // Components
+    public static final ComponentType<Integer> COOLDOWN = registerComponent("cooldown", builder -> builder.codec(Codecs.NONNEGATIVE_INT).packetCodec(PacketCodecs.VAR_INT));
+    public static final ComponentType<FlaskComponent> FLASK_DATA = registerComponent("fill_level", builder -> builder.codec(FlaskComponent.CODEC).packetCodec(FlaskComponent.PACKET_CODEC));
     // Flasks
     public static final Item LEATHER_FLASK = register("leather_flask", new LeatherFlask(0, new Item.Settings().maxCount(1)));
     public static final Item IRON_LEATHER_FLASK = register("iron_leather_flask", new LeatherFlask(1, new Item.Settings().maxCount(1)));
@@ -37,8 +46,8 @@ public class ItemInit {
     public static final Item DIAMOND_LEATHER_FLASK = register("diamond_leather_flask", new LeatherFlask(3, new Item.Settings().maxCount(1)));
     public static final Item NETHERITE_LEATHER_FLASK = register("netherite_leather_flask", new LeatherFlask(4, new Item.Settings().maxCount(1).fireproof()));
     // Potion
-    public static final Potion PURIFIED_WATER = new Potion(new StatusEffectInstance[0]);
-    public static final Potion HYDRATION = new Potion(new StatusEffectInstance(EffectInit.HYDRATION, 900));
+    public static final RegistryEntry<Potion> PURIFIED_WATER = registerPotion("purified_water", new Potion(new StatusEffectInstance[0]));
+    public static final RegistryEntry<Potion> HYDRATION = registerPotion("hydration", new Potion(new StatusEffectInstance(EffectInit.HYDRATION, 900)));
     // Handbook
     public static final Item HANDBOOK = register("handbook", new HandbookItem(new Item.Settings()));
     // Bucket
@@ -49,11 +58,19 @@ public class ItemInit {
 
     private static Item register(String name, Item item) {
         ItemGroupEvents.modifyEntriesEvent(DEHYDRATION_ITEM_GROUP).register(entries -> entries.add(item));
-        ITEMS.put(new Identifier("dehydration", name), item);
+        ITEMS.put(Identifier.of("dehydration", name), item);
         if (name.contains("flask")) {
             FLASK_ITEM_LIST.add(item);
         }
         return item;
+    }
+
+    private static RegistryEntry<Potion> registerPotion(String name, Potion potion) {
+        return Registry.registerReference(Registries.POTION, Identifier.of(name), potion);
+    }
+
+    private static <T> ComponentType<T> registerComponent(String id, UnaryOperator<ComponentType.Builder<T>> builderOperator) {
+        return Registry.register(Registries.DATA_COMPONENT_TYPE, id, builderOperator.apply(ComponentType.builder()).build());
     }
 
     public static void init() {
@@ -62,8 +79,6 @@ public class ItemInit {
         for (Identifier id : ITEMS.keySet()) {
             Registry.register(Registries.ITEM, id, ITEMS.get(id));
         }
-        Registry.register(Registries.POTION, "purified_water", PURIFIED_WATER);
-        Registry.register(Registries.POTION, "hydration", HYDRATION);
     }
 
 }

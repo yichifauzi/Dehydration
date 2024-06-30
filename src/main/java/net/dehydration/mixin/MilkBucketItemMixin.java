@@ -12,13 +12,13 @@ import net.dehydration.access.ThirstManagerAccess;
 import net.dehydration.init.ConfigInit;
 import net.dehydration.init.EffectInit;
 import net.dehydration.misc.ThirstTooltipData;
-import net.minecraft.client.item.TooltipData;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.MilkBucketItem;
+import net.minecraft.item.tooltip.TooltipData;
 import net.minecraft.world.World;
 
 @Mixin(MilkBucketItem.class)

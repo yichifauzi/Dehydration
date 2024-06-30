@@ -7,13 +7,13 @@
     ],
     "key": {
         "d": {
-            "item": "minecraft:diamond"
+            "item": "minecraft:iron_ingot"
         },
         "e": {
-            "item": "dehydration:golden_leather_flask"
+            "item": "dehydration:leather_flask"
         }
     },
     "result": {
-        "item": "dehydration:diamond_leather_flask"
+        "id": "dehydration:iron_leather_flask"
     }
 }

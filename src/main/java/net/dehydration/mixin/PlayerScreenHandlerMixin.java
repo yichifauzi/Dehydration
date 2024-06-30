@@ -1,9 +1,10 @@
 package net.dehydration.mixin;
 
+import net.dehydration.init.ItemInit;
 import net.dehydration.item.LeatherFlask;
+import net.dehydration.item.component.FlaskComponent;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
 import net.minecraft.screen.PlayerScreenHandler;
 import net.minecraft.screen.slot.CraftingResultSlot;
 import net.minecraft.screen.slot.Slot;
@@ -20,10 +21,8 @@ public class PlayerScreenHandlerMixin {
     @Inject(method = "quickMove", at = @At(value = "INVOKE", target = "Lnet/minecraft/item/ItemStack;copy()Lnet/minecraft/item/ItemStack;"), locals = LocalCapture.CAPTURE_FAILSOFT)
     public void onCraftedLeatherFlask(PlayerEntity player, int slot, CallbackInfoReturnable<ItemStack> cir, ItemStack itemStack, Slot slot2, ItemStack itemStack2) {
         if (player instanceof ServerPlayerEntity && slot2 instanceof CraftingResultSlot) {
-            if (itemStack2.getItem() instanceof LeatherFlask && !itemStack2.hasNbt()) {
-                NbtCompound tags = new NbtCompound();
-                tags.putInt("leather_flask", 0);
-                itemStack2.setNbt(tags);
+            if (itemStack2.getItem() instanceof LeatherFlask && itemStack2.get(ItemInit.FLASK_DATA) == null) {
+                itemStack2.set(ItemInit.FLASK_DATA, new FlaskComponent(0, 0));
             }
         }
     }

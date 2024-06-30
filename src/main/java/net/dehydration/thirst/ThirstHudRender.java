@@ -1,8 +1,8 @@
 package net.dehydration.thirst;
 
+import org.jetbrains.annotations.Nullable;
 import com.mojang.blaze3d.systems.RenderSystem;
 
-import net.dehydration.access.HudAccess;
 import net.dehydration.access.ThirstManagerAccess;
 import net.dehydration.init.ConfigInit;
 import net.dehydration.init.EffectInit;
@@ -13,6 +13,8 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.MathHelper;
@@ -20,10 +22,12 @@ import net.minecraft.util.math.MathHelper;
 @Environment(EnvType.CLIENT)
 public class ThirstHudRender {
 
+    private static float flashAlpha = 0f;
+    private static float otherFlashAlpha = 0f;
+
     // Could implement HudRenderCallback
-    public static void renderThirstHud(DrawContext context, MinecraftClient client, PlayerEntity playerEntity, int scaledWidth, int scaledHeight, int ticks, int vehicleHeartCount, float flashAlpha,
-            float otherFlashAlpha) {
-        if (playerEntity != null && !playerEntity.isInvulnerable()) {
+    public static void renderThirstHud(DrawContext context, MinecraftClient client, PlayerEntity playerEntity, int scaledWidth, int scaledHeight, int ticks) {
+        if (playerEntity != null && !playerEntity.isInvulnerable() && !playerEntity.isCreative() && !client.options.hudHidden) {
             ThirstManager thirstManager = ((ThirstManagerAccess) playerEntity).getThirstManager();
             if (thirstManager.hasThirst()) {
                 int thirst = thirstManager.getThirstLevel();
@@ -32,7 +36,7 @@ public class ThirstHudRender {
                 int variable_three;
                 int height = scaledHeight - 49;
                 int width = scaledWidth / 2 + 91;
-                if (vehicleHeartCount == 0) {
+                if (getHeartCount(playerEntity.getVehicle()) == 0) {
 
                     ItemStack itemStack = null;
                     if (ConfigInit.CONFIG.thirst_preview && thirst < 20) {
@@ -45,11 +49,11 @@ public class ThirstHudRender {
                         }
                     }
                     if (itemStack != null) {
-                        ((HudAccess) client.inGameHud).setOtherFlashAlpha(otherFlashAlpha += MathHelper.PI / (48F));
-                        ((HudAccess) client.inGameHud).setFlashAlpha((MathHelper.cos(otherFlashAlpha + MathHelper.PI) + 1f) / 2f);
+                        otherFlashAlpha = otherFlashAlpha += MathHelper.PI / (48F);
+                        flashAlpha = (MathHelper.cos(otherFlashAlpha + MathHelper.PI) + 1f) / 2f;
                     } else if (otherFlashAlpha > 0.01F) {
-                        ((HudAccess) client.inGameHud).setOtherFlashAlpha(0.0F);
-                        ((HudAccess) client.inGameHud).setFlashAlpha(0.0F);
+                        otherFlashAlpha = 0.0F;
+                        flashAlpha = 0.0F;
                     }
 
                     // Render ui droplets
@@ -117,6 +121,18 @@ public class ThirstHudRender {
                 }
             }
         }
+    }
+
+    private static int getHeartCount(@Nullable Entity entity) {
+        if (entity == null || !entity.isLiving() || !(entity instanceof LivingEntity livingEntity)) {
+            return 0;
+        }
+        float f = livingEntity.getMaxHealth();
+        int i = (int) (f + 0.5f) / 2;
+        if (i > 30) {
+            i = 30;
+        }
+        return i;
     }
 
 }

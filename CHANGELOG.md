@@ -1,7 +1,6 @@
 ### Added:
 - 
 ### Fixed:
-- Fixed purified bucket compatibility (by Tiviacz1337)
-- Fixed dispenser crash
+- Fixed purified water render
 ### Changed:
-- 
+- Updated to mc 1.21

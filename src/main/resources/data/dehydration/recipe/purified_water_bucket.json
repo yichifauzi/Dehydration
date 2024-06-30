@@ -3,7 +3,9 @@
     "ingredient": {
         "item": "minecraft:water_bucket"
     },
-    "result": "dehydration:purified_water_bucket",
+    "result": {
+        "id": "dehydration:purified_water_bucket"
+    },
     "experience": 1.0,
     "cookingtime": 600
 }
