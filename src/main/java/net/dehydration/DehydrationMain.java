@@ -18,6 +18,7 @@ import org.apache.logging.log4j.Logger;
 public class DehydrationMain implements ModInitializer {
 
     public static final Logger LOGGER = LogManager.getLogger("Dehydration");
+    public static final boolean bucketLibLoaded = FabricLoader.getInstance().isModLoaded("bucketlib");
 
     // map for storing attributes before logging into a server
     public static final List<HydrationTemplate> HYDRATION_TEMPLATES = new ArrayList<HydrationTemplate>();
