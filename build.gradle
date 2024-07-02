@@ -24,7 +24,11 @@ dependencies {
 	mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
-	modImplementation "com.github.cech12.BucketLib:fabric:${project.bucketlib_version}"
+
+	// BucketLib
+	modCompileOnly modRuntimeOnly("com.github.cech12.BucketLib:fabric:${project.bucketlib_version}"),{
+		exclude(group: "net.fabricmc.fabric-api")
+	}
 
 	// Config
 	modImplementation("me.shedaniel.cloth:cloth-config-fabric:${project.cloth_config_version}") {
