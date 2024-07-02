@@ -2,8 +2,7 @@ package net.dehydration.block;
 
 import java.util.List;
 
-import de.cech12.bucketlib.api.item.UniversalBucketItem;
-import de.cech12.bucketlib.util.BucketLibUtil;
+import net.dehydration.DehydrationMain;
 import net.minecraft.item.*;
 import org.jetbrains.annotations.Nullable;
 
@@ -86,7 +85,7 @@ public class BambooPumpBlock extends BlockWithEntity {
             ItemStack itemStack = bambooPumpEntity.getStack(0);
             ItemStack itemStack2 = player.getStackInHand(hand);
             if (itemStack.isEmpty()) {
-                if (itemStack2.isOf(Items.BUCKET) || (itemStack2.getItem() instanceof UniversalBucketItem && BucketLibUtil.isEmpty(itemStack2)) || itemStack2.isOf(Items.GLASS_BOTTLE) || (itemStack2.getItem() instanceof LeatherFlask && !LeatherFlask.isFlaskFull(itemStack2))) {
+                if (itemStack2.isOf(Items.BUCKET) || (DehydrationMain.bucketLibLoaded && itemStack2.getItem() instanceof de.cech12.bucketlib.api.item.UniversalBucketItem && de.cech12.bucketlib.util.BucketLibUtil.isEmpty(itemStack2)) || itemStack2.isOf(Items.GLASS_BOTTLE) || (itemStack2.getItem() instanceof LeatherFlask && !LeatherFlask.isFlaskFull(itemStack2))) {
                     if (!world.isClient()) {
                         if (player.isCreative()) {
                             bambooPumpEntity.setStack(0, itemStack2.copy());
@@ -117,7 +116,7 @@ public class BambooPumpBlock extends BlockWithEntity {
                     }
                     return ItemActionResult.success(world.isClient());
                 }
-                if (itemStack.isOf(Items.BUCKET) || (itemStack.getItem() instanceof UniversalBucketItem && BucketLibUtil.isEmpty(itemStack2)) || itemStack.isOf(Items.GLASS_BOTTLE) || (itemStack.getItem() instanceof LeatherFlask && !LeatherFlask.isFlaskFull(itemStack))) {
+                if (itemStack.isOf(Items.BUCKET) || (DehydrationMain.bucketLibLoaded && itemStack.getItem() instanceof de.cech12.bucketlib.api.item.UniversalBucketItem && de.cech12.bucketlib.util.BucketLibUtil.isEmpty(itemStack2)) || itemStack.isOf(Items.GLASS_BOTTLE) || (itemStack.getItem() instanceof LeatherFlask && !LeatherFlask.isFlaskFull(itemStack))) {
                     if (ConfigInit.CONFIG.pump_requires_water) {
                         boolean foundWater = false;
                         for (int i = 0; i < 50; i++) {
