@@ -1,5 +1,7 @@
 package net.dehydration.block;
 
+import de.cech12.bucketlib.api.item.UniversalBucketItem;
+import de.cech12.bucketlib.util.BucketLibUtil;
 import net.dehydration.block.entity.CampfireCauldronEntity;
 import net.dehydration.init.BlockInit;
 import net.dehydration.init.ItemInit;
@@ -17,6 +19,7 @@ import net.minecraft.component.type.PotionContentsComponent;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.ai.pathing.NavigationType;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.fluid.Fluids;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.ItemStack;
@@ -112,7 +115,6 @@ public class CampfireCauldronBlock extends Block implements BlockEntityProvider 
                     world.playSound(null, pos, SoundEvents.ITEM_BUCKET_EMPTY, SoundCategory.BLOCKS, 1.0F, 1.0F);
                 }
                 return ItemActionResult.success(world.isClient());
-
             } else if (item == Items.BUCKET) {
                 if (i == 4 && !world.isClient()) {
                     if (!player.isCreative()) {
@@ -125,6 +127,34 @@ public class CampfireCauldronBlock extends Block implements BlockEntityProvider 
                     }
                     this.setLevel(world, pos, state, 0);
                     world.playSound(null, pos, SoundEvents.ITEM_BUCKET_FILL, SoundCategory.BLOCKS, 1.0F, 1.0F);
+                }
+                return ItemActionResult.success(world.isClient());
+
+            } else if (item instanceof UniversalBucketItem && BucketLibUtil.isEmpty(itemStack)) {
+                if (i == 4 && !world.isClient()) {
+                    if (!player.isCreative()) {
+                        ItemStack tempStack = itemStack;
+                        ItemStack waterStack = BucketLibUtil.addFluid(tempStack, Fluids.WATER);
+                        itemStack.decrement(1);
+                        if (itemStack.isEmpty()) {
+                            player.setStackInHand(hand, waterStack);
+                        } else if (!player.getInventory().insertStack(waterStack)) {
+                            player.dropItem(waterStack, false);
+                        }
+                    }
+                    this.setLevel(world, pos, state, 0);
+                    world.playSound(null, pos, SoundEvents.ITEM_BUCKET_FILL, SoundCategory.BLOCKS, 1.0F, 1.0F);
+                }
+                return ItemActionResult.success(world.isClient());
+
+            } else if(item instanceof UniversalBucketItem && BucketLibUtil.getFluid(itemStack) == Fluids.WATER) {
+                if (i < 4 && !world.isClient()) {
+                    if (!player.isCreative()) {
+                        player.setStackInHand(hand, BucketLibUtil.removeFluid(itemStack, null, player));
+                    }
+                    campfireCauldronEntity.onFillingCauldron();
+                    this.setLevel(world, pos, state, 4);
+                    world.playSound(null, pos, SoundEvents.ITEM_BUCKET_EMPTY, SoundCategory.BLOCKS, 1.0F, 1.0F);
                 }
                 return ItemActionResult.success(world.isClient());
 
