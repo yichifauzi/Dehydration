@@ -27,7 +27,7 @@ public class ThirstHudRender {
 
     // Could implement HudRenderCallback
     public static void renderThirstHud(DrawContext context, MinecraftClient client, PlayerEntity playerEntity, int scaledWidth, int scaledHeight, int ticks) {
-        if (playerEntity != null && !playerEntity.isInvulnerable() && !playerEntity.isCreative() && !client.options.hudHidden) {
+        if (playerEntity != null && !playerEntity.isInvulnerable() && !playerEntity.isCreative() && !playerEntity.isSpectator() && !client.options.hudHidden) {
             ThirstManager thirstManager = ((ThirstManagerAccess) playerEntity).getThirstManager();
             if (thirstManager.hasThirst()) {
                 int thirst = thirstManager.getThirstLevel();
