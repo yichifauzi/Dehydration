@@ -1,7 +1,5 @@
 package net.dehydration.block;
 
-import de.cech12.bucketlib.api.item.UniversalBucketItem;
-import de.cech12.bucketlib.util.BucketLibUtil;
 import net.dehydration.block.entity.CampfireCauldronEntity;
 import net.dehydration.init.BlockInit;
 import net.dehydration.init.ItemInit;
@@ -10,24 +8,28 @@ import net.dehydration.item.LeatherFlask;
 import net.dehydration.item.component.FlaskComponent;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.block.*;
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage;
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorageUtil;
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
+import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
+import net.minecraft.block.AbstractBlock;
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockEntityProvider;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.CampfireBlock;
+import net.minecraft.block.HorizontalFacingBlock;
+import net.minecraft.block.ShapeContext;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityTicker;
 import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.PotionContentsComponent;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.ai.pathing.NavigationType;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.fluid.Fluids;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.potion.Potions;
 import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.DirectionProperty;
 import net.minecraft.state.property.IntProperty;
@@ -99,104 +101,15 @@ public class CampfireCauldronBlock extends Block implements BlockEntityProvider 
     @Override
     public ItemActionResult onUseWithItem(ItemStack stack, BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
         ItemStack itemStack = player.getStackInHand(hand);
-        CampfireCauldronEntity campfireCauldronEntity = (CampfireCauldronEntity) world.getBlockEntity(pos);
         if (itemStack.isEmpty()) {
             return ItemActionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
         } else {
-            int i = (Integer) state.get(LEVEL);
-            Item item = itemStack.getItem();
-            if (item == Items.WATER_BUCKET) {
-                if (i < 4 && !world.isClient()) {
-                    if (!player.isCreative()) {
-                        player.setStackInHand(hand, new ItemStack(Items.BUCKET));
-                    }
-                    campfireCauldronEntity.onFillingCauldron();
-                    this.setLevel(world, pos, state, 4);
-                    world.playSound(null, pos, SoundEvents.ITEM_BUCKET_EMPTY, SoundCategory.BLOCKS, 1.0F, 1.0F);
-                }
+            Storage<FluidVariant> storage = FluidStorage.SIDED.find(world, pos, hit.getSide().getOpposite());
+            if (storage != null && FluidStorageUtil.interactWithFluidStorage(storage, player, hand)) {
                 return ItemActionResult.success(world.isClient());
-            } else if (item == Items.BUCKET) {
-                if (i == 4 && !world.isClient()) {
-                    if (!player.isCreative()) {
-                        itemStack.decrement(1);
-                        if (itemStack.isEmpty()) {
-                            player.setStackInHand(hand, new ItemStack(Items.WATER_BUCKET));
-                        } else if (!player.getInventory().insertStack(new ItemStack(Items.WATER_BUCKET))) {
-                            player.dropItem(new ItemStack(Items.WATER_BUCKET), false);
-                        }
-                    }
-                    this.setLevel(world, pos, state, 0);
-                    world.playSound(null, pos, SoundEvents.ITEM_BUCKET_FILL, SoundCategory.BLOCKS, 1.0F, 1.0F);
-                }
-                return ItemActionResult.success(world.isClient());
-
-            } else if (item instanceof UniversalBucketItem && BucketLibUtil.isEmpty(itemStack)) {
-                if (i == 4 && !world.isClient()) {
-                    if (!player.isCreative()) {
-                        ItemStack tempStack = itemStack;
-                        ItemStack waterStack = BucketLibUtil.addFluid(tempStack, Fluids.WATER);
-                        itemStack.decrement(1);
-                        if (itemStack.isEmpty()) {
-                            player.setStackInHand(hand, waterStack);
-                        } else if (!player.getInventory().insertStack(waterStack)) {
-                            player.dropItem(waterStack, false);
-                        }
-                    }
-                    this.setLevel(world, pos, state, 0);
-                    world.playSound(null, pos, SoundEvents.ITEM_BUCKET_FILL, SoundCategory.BLOCKS, 1.0F, 1.0F);
-                }
-                return ItemActionResult.success(world.isClient());
-
-            } else if(item instanceof UniversalBucketItem && BucketLibUtil.getFluid(itemStack) == Fluids.WATER) {
-                if (i < 4 && !world.isClient()) {
-                    if (!player.isCreative()) {
-                        player.setStackInHand(hand, BucketLibUtil.removeFluid(itemStack, null, player));
-                    }
-                    campfireCauldronEntity.onFillingCauldron();
-                    this.setLevel(world, pos, state, 4);
-                    world.playSound(null, pos, SoundEvents.ITEM_BUCKET_EMPTY, SoundCategory.BLOCKS, 1.0F, 1.0F);
-                }
-                return ItemActionResult.success(world.isClient());
-
             } else {
-
-                ItemStack newItemStack;
-                if (item == Items.GLASS_BOTTLE) {
-                    if (i > 0 && !world.isClient()) {
-                        if (!player.isCreative()) {
-                            itemStack.decrement(1);
-                            if (this.isPurifiedWater(world, pos)) {
-                                newItemStack = PotionContentsComponent.createStack(Items.POTION, ItemInit.PURIFIED_WATER);
-                            } else {
-                                newItemStack = PotionContentsComponent.createStack(Items.POTION, Potions.WATER);
-                            }
-                            if (player.getStackInHand(hand).isEmpty()) {
-                                player.setStackInHand(hand, newItemStack);
-                            } else if (!player.getInventory().insertStack(newItemStack)) {
-                                player.dropItem(newItemStack, false);
-                            }
-                        }
-                        world.playSound(null, pos, SoundEvents.ITEM_BOTTLE_FILL, SoundCategory.BLOCKS, 1.0F, 1.0F);
-                        this.setLevel(world, pos, state, i - 1);
-                    }
-                    return ItemActionResult.success(world.isClient());
-
-                } else if (item == Items.POTION && itemStack.get(DataComponentTypes.POTION_CONTENTS) != null && (itemStack.get(DataComponentTypes.POTION_CONTENTS).potion().get() == Potions.WATER
-                        || itemStack.get(DataComponentTypes.POTION_CONTENTS).potion().get() == ItemInit.PURIFIED_WATER)) {
-                    if (i < 4 && !world.isClient()) {
-                        if (!player.isCreative()) {
-                            newItemStack = new ItemStack(Items.GLASS_BOTTLE);
-                            player.setStackInHand(hand, newItemStack);
-                        }
-                        world.playSound(null, pos, SoundEvents.ITEM_BOTTLE_EMPTY, SoundCategory.BLOCKS, 1.0F, 1.0F);
-                        if (itemStack.get(DataComponentTypes.POTION_CONTENTS) != null && itemStack.get(DataComponentTypes.POTION_CONTENTS).potion().get() == Potions.WATER) {
-                            campfireCauldronEntity.onFillingCauldron();
-                        }
-                        this.setLevel(world, pos, state, i + 1);
-                    }
-                    return ItemActionResult.success(world.isClient());
-
-                } else {
+                int i = state.get(LEVEL);
+                Item item = itemStack.getItem();
                     if (i > 0 && item instanceof LeatherFlask) {
                         FlaskComponent flaskComponent = itemStack.getOrDefault(ItemInit.FLASK_DATA, FlaskComponent.DEFAULT);
                         if (flaskComponent.fillLevel() < 2 + ((LeatherFlask) item).getExtraFillLevel()) {
@@ -221,7 +134,6 @@ public class CampfireCauldronBlock extends Block implements BlockEntityProvider 
                     } else {
                         return ItemActionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
                     }
-                }
             }
         }
     }
