@@ -1,15 +1,19 @@
 package net.dehydration.init;
 
+import net.dehydration.block.entity.CampfireCauldronEntity;
 import net.dehydration.fluid.PurifiedWaterFluid;
-import net.dehydration.item.PurifiedBucket;
+import net.dehydration.fluid.storage.CampfireCauldronFluidStorage;
+import net.dehydration.fluid.storage.PurifiedWaterPotionStorage;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage;
-import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
 import net.fabricmc.fabric.api.transfer.v1.fluid.base.EmptyItemFluidStorage;
-import net.fabricmc.fabric.api.transfer.v1.fluid.base.FullItemFluidStorage;
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.PotionContentsComponent;
 import net.minecraft.fluid.FlowableFluid;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.fluid.FluidState;
+import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
@@ -20,17 +24,17 @@ public class FluidInit {
     public static final FlowableFluid PURIFIED_WATER = register("dehydration:purified_water", new PurifiedWaterFluid.Still());
 
     public static void init() {
-        FluidStorage.GENERAL_COMBINED_PROVIDER.register(context -> {
-            if (context.getItemVariant().getItem() instanceof PurifiedBucket bucketItem) {
-                Fluid bucketFluid = FluidInit.PURIFIED_WATER;
-                if (bucketFluid != null && bucketFluid.getBucketItem() == bucketItem) {
-                    return new FullItemFluidStorage(context, Items.BUCKET, FluidVariant.of(bucketFluid), FluidConstants.BUCKET);
-                }
-            }
-            return null;
-        });
-
-        FluidStorage.combinedItemApiProvider(Items.BUCKET).register(context -> new EmptyItemFluidStorage(context, ItemInit.PURIFIED_BUCKET, FluidInit.PURIFIED_WATER, FluidConstants.BUCKET));
+        // BucketItem storages are added by Fabric
+        // Register empty bottle storage for purified water
+        FluidStorage.combinedItemApiProvider(Items.GLASS_BOTTLE).register(context -> new EmptyItemFluidStorage(context, emptyBottle -> {
+            ItemStack newStack = emptyBottle.toStack();
+            newStack.set(DataComponentTypes.POTION_CONTENTS, new PotionContentsComponent(ItemInit.PURIFIED_WATER));
+            return ItemVariant.of(Items.POTION, newStack.getComponentChanges());
+        }, FluidInit.PURIFIED_WATER, FluidConstants.BOTTLE));
+        // Register purified water potion storage
+        FluidStorage.combinedItemApiProvider(Items.POTION).register(PurifiedWaterPotionStorage::find);
+        // Register campfire cauldron storage
+        FluidStorage.SIDED.registerForBlocks((world, pos, state, blockEntity, context) -> new CampfireCauldronFluidStorage(world, pos, state, (CampfireCauldronEntity) blockEntity), BlockInit.CAMPFIRE_CAULDRON_BLOCK);
     }
 
     private static <T extends Fluid> T register(String id, T value) {

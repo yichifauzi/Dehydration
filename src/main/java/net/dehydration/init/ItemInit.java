@@ -1,20 +1,17 @@
 package net.dehydration.init;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.function.UnaryOperator;
-
+import net.dehydration.block.entity.BambooPumpEntity;
 import net.dehydration.item.HandbookItem;
 import net.dehydration.item.LeatherFlask;
-import net.dehydration.item.PurifiedBucket;
 import net.dehydration.item.WaterBowlItem;
 import net.dehydration.item.component.FlaskComponent;
+import net.dehydration.item.storage.BambooPumpStorage;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
+import net.fabricmc.fabric.api.transfer.v1.item.ItemStorage;
 import net.minecraft.component.ComponentType;
 import net.minecraft.entity.effect.StatusEffectInstance;
+import net.minecraft.item.BucketItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
@@ -29,6 +26,12 @@ import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.dynamic.Codecs;
+
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.UnaryOperator;
 
 public class ItemInit {
     // Item Group
@@ -51,7 +54,7 @@ public class ItemInit {
     // Handbook
     public static final Item HANDBOOK = register("handbook", new HandbookItem(new Item.Settings()));
     // Bucket
-    public static final Item PURIFIED_BUCKET = register("purified_water_bucket", new PurifiedBucket(new Item.Settings().recipeRemainder(Items.BUCKET).maxCount(1)));
+    public static final Item PURIFIED_BUCKET = register("purified_water_bucket", new BucketItem(FluidInit.PURIFIED_WATER, new Item.Settings().recipeRemainder(Items.BUCKET).maxCount(1)));
     // Bowl
     public static final Item WATER_BOWL = register("water_bowl", new WaterBowlItem(new Item.Settings().maxCount(1), true));
     public static final Item PURIFIED_WATER_BOWL = register("purified_water_bowl", new WaterBowlItem(new Item.Settings().maxCount(1), true));
@@ -79,6 +82,8 @@ public class ItemInit {
         for (Identifier id : ITEMS.keySet()) {
             Registry.register(Registries.ITEM, id, ITEMS.get(id));
         }
+        //register item storage for bamboo pump
+        ItemStorage.SIDED.registerForBlockEntities((blockEntity, context) -> new BambooPumpStorage((BambooPumpEntity) blockEntity), BlockInit.BAMBOO_PUMP_ENTITY);
     }
 
 }

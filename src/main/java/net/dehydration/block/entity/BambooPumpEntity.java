@@ -1,19 +1,24 @@
 package net.dehydration.block.entity;
 
-import net.dehydration.DehydrationMain;
 import net.dehydration.init.BlockInit;
 import net.dehydration.init.ConfigInit;
 import net.dehydration.init.FluidInit;
-import net.dehydration.init.ItemInit;
 import net.dehydration.item.LeatherFlask;
+import net.fabricmc.fabric.api.transfer.v1.context.ContainerItemContext;
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage;
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
+import net.fabricmc.fabric.api.transfer.v1.item.ItemStorage;
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
+import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
+import net.fabricmc.fabric.api.transfer.v1.storage.base.SingleSlotStorage;
+import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.component.type.PotionContentsComponent;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.Inventories;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
 import net.minecraft.registry.RegistryWrapper.WrapperLookup;
@@ -71,28 +76,22 @@ public class BambooPumpEntity extends BlockEntity implements Inventory {
     }
 
     private void updateInventory() {
-        if (!getStack(0).isEmpty()) {
-            ItemStack itemStack = getStack(0);
-            if (itemStack.isOf(Items.BUCKET)) {
-                if (pumpCount > 3) {
-                    if (!this.world.isClient())
-                        setStack(0, new ItemStack(ItemInit.PURIFIED_BUCKET));
-                    pumpCount = 0;
-                    cooldown = ConfigInit.CONFIG.pump_cooldown;
+        ItemStack itemStack = getStack(0);
+        if (!itemStack.isEmpty()) {
+            Storage<FluidVariant> fluidStorage = null;
+            Storage<ItemVariant> itemStorage = ItemStorage.SIDED.find(this.world, this.pos, null);
+            if (itemStorage instanceof SingleSlotStorage<ItemVariant> singleSlotStorage) {
+                fluidStorage = ContainerItemContext.ofSingleSlot(singleSlotStorage).find(FluidStorage.ITEM);
+            }
+            if (fluidStorage != null && fluidStorage.supportsInsertion()) {
+                long amount = pumpCount * FluidConstants.BOTTLE;
+                try (Transaction transaction = Transaction.openOuter()) {
+                    if (fluidStorage.insert(FluidVariant.of(FluidInit.PURIFIED_WATER), amount, transaction) > 0) {
+                        transaction.commit();
+                        pumpCount = 0;
+                        cooldown = ConfigInit.CONFIG.pump_cooldown;
+                    }
                 }
-            } else if (DehydrationMain.bucketLibLoaded && itemStack.getItem() instanceof de.cech12.bucketlib.api.item.UniversalBucketItem && de.cech12.bucketlib.util.BucketLibUtil.isEmpty(itemStack)){
-                if (pumpCount > 3) {
-                    if (!this.world.isClient())
-                        setStack(0, de.cech12.bucketlib.util.BucketLibUtil.addFluid(itemStack, FluidInit.PURIFIED_WATER));
-                    pumpCount = 0;
-                    cooldown = ConfigInit.CONFIG.pump_cooldown;
-                }
-            } else if (itemStack.isOf(Items.GLASS_BOTTLE)) {
-                if (!this.world.isClient()) {
-                    setStack(0, PotionContentsComponent.createStack(Items.POTION, ItemInit.PURIFIED_WATER));
-                }
-                pumpCount = 0;
-                cooldown = ConfigInit.CONFIG.pump_cooldown;
             } else if (itemStack.getItem() instanceof LeatherFlask) {
                 if (!this.world.isClient()) {
                     LeatherFlask.fillFlask(itemStack, 2);

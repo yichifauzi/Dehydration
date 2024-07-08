@@ -25,11 +25,6 @@ dependencies {
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
-	// BucketLib
-	modCompileOnly modRuntimeOnly("com.github.cech12.BucketLib:fabric:${project.bucketlib_version}"),{
-		exclude(group: "net.fabricmc.fabric-api")
-	}
-
 	// Config
 	modImplementation("me.shedaniel.cloth:cloth-config-fabric:${project.cloth_config_version}") {
     	exclude(group: "net.fabricmc.fabric-api")
@@ -61,8 +56,7 @@ processResources {
 			"fabric_version": project.fabric_version,
 			"loader_version": project.loader_version,
 			"minecraft_version": project.minecraft_version,
-			"cloth_config_version": project.cloth_config_version,
-			"bucketlib_version": project.bucketlib_version
+			"cloth_config_version": project.cloth_config_version
 	}
 }
 

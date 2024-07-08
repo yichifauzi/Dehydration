@@ -38,8 +38,7 @@
   },
   "suggests": {
     "environmentz": "*",
-    "puddles": "*",
-    "bucketlib": ">=${bucketlib_version}"
+    "puddles": "*"
   },
   "custom": {
     "mc-publish": {
