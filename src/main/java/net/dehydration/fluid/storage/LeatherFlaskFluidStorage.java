@@ -1,4 +1,4 @@
-package net.dehydration.item.storage;
+package net.dehydration.fluid.storage;
 
 import net.dehydration.init.FluidInit;
 import net.dehydration.init.ItemInit;

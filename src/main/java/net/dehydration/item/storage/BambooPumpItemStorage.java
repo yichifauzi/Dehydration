@@ -9,11 +9,11 @@ import net.fabricmc.fabric.api.transfer.v1.item.base.SingleStackStorage;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
 import net.minecraft.item.ItemStack;
 
-public class BambooPumpStorage extends SingleStackStorage {
+public class BambooPumpItemStorage extends SingleStackStorage {
 
     private final BambooPumpEntity pumpEntity;
 
-    public BambooPumpStorage(BambooPumpEntity pumpEntity) {
+    public BambooPumpItemStorage(BambooPumpEntity pumpEntity) {
         this.pumpEntity = pumpEntity;
     }
 

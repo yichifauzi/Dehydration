@@ -5,7 +5,7 @@ import net.dehydration.item.HandbookItem;
 import net.dehydration.item.LeatherFlask;
 import net.dehydration.item.WaterBowlItem;
 import net.dehydration.item.component.FlaskComponent;
-import net.dehydration.item.storage.BambooPumpStorage;
+import net.dehydration.item.storage.BambooPumpItemStorage;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemStorage;
@@ -83,7 +83,7 @@ public class ItemInit {
             Registry.register(Registries.ITEM, id, ITEMS.get(id));
         }
         //register item storage for bamboo pump
-        ItemStorage.SIDED.registerForBlockEntities((blockEntity, context) -> new BambooPumpStorage((BambooPumpEntity) blockEntity), BlockInit.BAMBOO_PUMP_ENTITY);
+        ItemStorage.SIDED.registerForBlockEntities((blockEntity, context) -> new BambooPumpItemStorage((BambooPumpEntity) blockEntity), BlockInit.BAMBOO_PUMP_ENTITY);
     }
 
 }
