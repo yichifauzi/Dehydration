@@ -2,10 +2,7 @@ package net.dehydration.block;
 
 import net.dehydration.block.entity.CampfireCauldronEntity;
 import net.dehydration.init.BlockInit;
-import net.dehydration.init.ItemInit;
 import net.dehydration.init.SoundInit;
-import net.dehydration.item.LeatherFlask;
-import net.dehydration.item.component.FlaskComponent;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage;
@@ -25,7 +22,6 @@ import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.ai.pathing.NavigationType;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.tag.BlockTags;
@@ -100,42 +96,13 @@ public class CampfireCauldronBlock extends Block implements BlockEntityProvider 
 
     @Override
     public ItemActionResult onUseWithItem(ItemStack stack, BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
-        ItemStack itemStack = player.getStackInHand(hand);
-        if (itemStack.isEmpty()) {
-            return ItemActionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
-        } else {
+        if (!player.getStackInHand(hand).isEmpty()) {
             Storage<FluidVariant> storage = FluidStorage.SIDED.find(world, pos, hit.getSide().getOpposite());
             if (storage != null && FluidStorageUtil.interactWithFluidStorage(storage, player, hand)) {
                 return ItemActionResult.success(world.isClient());
-            } else {
-                int i = state.get(LEVEL);
-                Item item = itemStack.getItem();
-                    if (i > 0 && item instanceof LeatherFlask) {
-                        FlaskComponent flaskComponent = itemStack.getOrDefault(ItemInit.FLASK_DATA, FlaskComponent.DEFAULT);
-                        if (flaskComponent.fillLevel() < 2 + ((LeatherFlask) item).getExtraFillLevel()) {
-                            int qualityLevel = 0;
-                            if (this.isPurifiedWater(world, pos)) {
-                                if ((flaskComponent.qualityLevel() == 0 || flaskComponent.fillLevel() == 0)) {
-                                    qualityLevel = 0;
-                                } else {
-                                    qualityLevel = 1;
-                                }
-                            } else {
-                                qualityLevel = 2;
-                            }
-
-                            itemStack.set(ItemInit.FLASK_DATA, new FlaskComponent(flaskComponent.fillLevel() + 1, qualityLevel));
-                            this.setLevel(world, pos, state, i - 1);
-                            world.playSound(null, pos, SoundInit.FILL_FLASK_EVENT, SoundCategory.NEUTRAL, 1.0F, 1.0F);
-                            return ItemActionResult.success(world.isClient());
-                        } else {
-                            return ItemActionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
-                        }
-                    } else {
-                        return ItemActionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
-                    }
             }
         }
+        return ItemActionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
     }
 
     public void setLevel(World world, BlockPos pos, BlockState state, int level) {
