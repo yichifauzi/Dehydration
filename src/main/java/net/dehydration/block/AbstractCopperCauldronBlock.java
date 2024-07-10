@@ -53,18 +53,13 @@ public abstract class AbstractCopperCauldronBlock extends Block {
 
     @Override
     protected ItemActionResult onUseWithItem(ItemStack stack, BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
-        ItemStack itemStack = player.getStackInHand(hand);
-        if (!itemStack.isEmpty()) {
-            Storage<FluidVariant> storage = FluidStorage.SIDED.find(world, pos, hit.getSide().getOpposite());
-            if (storage != null && FluidStorageUtil.interactWithFluidStorage(storage, player, hand)) {
-                return ItemActionResult.success(world.isClient());
-            }
-            if (this.behaviorMap != null) {
-                CopperCauldronBehavior cauldronBehavior = this.behaviorMap.get(itemStack.getItem());
-                return cauldronBehavior.interact(state, world, pos, player, hand, itemStack);
-            }
+        Storage<FluidVariant> storage = FluidStorage.SIDED.find(world, pos, hit.getSide().getOpposite());
+        if (storage != null && FluidStorageUtil.interactWithFluidStorage(storage, player, hand)) {
+            return ItemActionResult.success(world.isClient());
         }
-        return ItemActionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+        ItemStack itemStack = player.getStackInHand(hand);
+        CopperCauldronBehavior cauldronBehavior = this.behaviorMap.get(itemStack.getItem());
+        return cauldronBehavior.interact(state, world, pos, player, hand, itemStack);
     }
 
     @Override

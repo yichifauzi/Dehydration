@@ -25,7 +25,10 @@ import java.util.Map;
 import java.util.function.Predicate;
 
 public interface CopperCauldronBehavior {
+    Map<Item, CopperCauldronBehavior> EMPTY_COPPER_CAULDRON_BEHAVIOR = createMap();
+    Map<Item, CopperCauldronBehavior> WATER_COPPER_CAULDRON_BEHAVIOR = createMap();
     Map<Item, CopperCauldronBehavior> POWDER_SNOW_COPPER_CAULDRON_BEHAVIOR = createMap();
+    Map<Item, CopperCauldronBehavior> PURIFIED_WATER_COPPER_CAULDRON_BEHAVIOR = createMap();
 
     CopperCauldronBehavior FILL_WITH_POWDER_SNOW = (state, world, pos, player, hand, stack) -> {
         return fillCauldron(world, pos, player, hand, stack, BlockInit.COPPER_POWDERED_CAULDRON_BLOCK.getDefaultState().with(CopperLeveledCauldronBlock.LEVEL, 3),
@@ -43,12 +46,15 @@ public interface CopperCauldronBehavior {
     ItemActionResult interact(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack);
 
     static void registerBehavior() {
+        registerBucketBehavior(EMPTY_COPPER_CAULDRON_BEHAVIOR);
+        registerBucketBehavior(WATER_COPPER_CAULDRON_BEHAVIOR);
         POWDER_SNOW_COPPER_CAULDRON_BEHAVIOR.put(Items.BUCKET, (state, world, pos, player, hand, stack) -> {
             return emptyCauldron(state, world, pos, player, hand, stack, new ItemStack(Items.POWDER_SNOW_BUCKET), (statex) -> {
                 return (Integer) statex.get(CopperLeveledCauldronBlock.LEVEL) == 3;
             }, SoundEvents.ITEM_BUCKET_FILL_POWDER_SNOW);
         });
         registerBucketBehavior(POWDER_SNOW_COPPER_CAULDRON_BEHAVIOR);
+        registerBucketBehavior(PURIFIED_WATER_COPPER_CAULDRON_BEHAVIOR);
     }
 
     static void registerBucketBehavior(Map<Item, CopperCauldronBehavior> behavior) {
