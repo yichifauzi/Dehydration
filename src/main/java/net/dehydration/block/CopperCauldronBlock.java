@@ -1,6 +1,5 @@
 package net.dehydration.block;
 
-import net.dehydration.block.entity.CopperCauldronBehavior;
 import net.dehydration.init.BlockInit;
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.BlockState;
@@ -16,7 +15,7 @@ import net.minecraft.world.event.GameEvent;
 public class CopperCauldronBlock extends AbstractCopperCauldronBlock {
 
     public CopperCauldronBlock(AbstractBlock.Settings settings) {
-        super(settings, CopperCauldronBehavior.EMPTY_COPPER_CAULDRON_BEHAVIOR);
+        super(settings, null);
     }
 
     @Override

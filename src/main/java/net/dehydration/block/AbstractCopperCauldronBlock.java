@@ -1,9 +1,11 @@
 package net.dehydration.block;
 
-import java.util.Map;
-
 import net.dehydration.block.entity.CopperCauldronBehavior;
 import net.dehydration.init.BlockInit;
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage;
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorageUtil;
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
+import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -29,6 +31,8 @@ import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldView;
 
+import java.util.Map;
+
 public abstract class AbstractCopperCauldronBlock extends Block {
     private static final VoxelShape RAYCAST_SHAPE = createCuboidShape(2.0D, 4.0D, 2.0D, 14.0D, 16.0D, 14.0D);
     protected static final VoxelShape OUTLINE_SHAPE;
@@ -50,8 +54,17 @@ public abstract class AbstractCopperCauldronBlock extends Block {
     @Override
     protected ItemActionResult onUseWithItem(ItemStack stack, BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
         ItemStack itemStack = player.getStackInHand(hand);
-        CopperCauldronBehavior cauldronBehavior = (CopperCauldronBehavior) this.behaviorMap.get(itemStack.getItem());
-        return cauldronBehavior.interact(state, world, pos, player, hand, itemStack);
+        if (!itemStack.isEmpty()) {
+            Storage<FluidVariant> storage = FluidStorage.SIDED.find(world, pos, hit.getSide().getOpposite());
+            if (storage != null && FluidStorageUtil.interactWithFluidStorage(storage, player, hand)) {
+                return ItemActionResult.success(world.isClient());
+            }
+            if (this.behaviorMap != null) {
+                CopperCauldronBehavior cauldronBehavior = this.behaviorMap.get(itemStack.getItem());
+                return cauldronBehavior.interact(state, world, pos, player, hand, itemStack);
+            }
+        }
+        return ItemActionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
     }
 
     @Override
