@@ -1,7 +1,6 @@
 package net.dehydration.item.storage;
 
 import net.dehydration.block.entity.BambooPumpEntity;
-import net.dehydration.init.ItemInit;
 import net.fabricmc.fabric.api.transfer.v1.context.ContainerItemContext;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
@@ -10,11 +9,11 @@ import net.fabricmc.fabric.api.transfer.v1.item.base.SingleStackStorage;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
 import net.minecraft.item.ItemStack;
 
-public class BambooPumpStorage extends SingleStackStorage {
+public class BambooPumpItemStorage extends SingleStackStorage {
 
     private final BambooPumpEntity pumpEntity;
 
-    public BambooPumpStorage(BambooPumpEntity pumpEntity) {
+    public BambooPumpItemStorage(BambooPumpEntity pumpEntity) {
         this.pumpEntity = pumpEntity;
     }
 
@@ -35,9 +34,9 @@ public class BambooPumpStorage extends SingleStackStorage {
 
     @Override
     protected boolean canInsert(ItemVariant variant) {
-        //only items with a fluid storage are allowed (or flask item)
+        //only items with a fluid storage are allowed
         Storage<FluidVariant> storage = ContainerItemContext.withConstant(variant, 1).find(FluidStorage.ITEM);
-        return storage != null || variant.getItem() == ItemInit.LEATHER_FLASK;
+        return storage != null;
     }
 
 }

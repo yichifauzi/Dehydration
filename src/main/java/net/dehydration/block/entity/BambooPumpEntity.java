@@ -3,7 +3,6 @@ package net.dehydration.block.entity;
 import net.dehydration.init.BlockInit;
 import net.dehydration.init.ConfigInit;
 import net.dehydration.init.FluidInit;
-import net.dehydration.item.LeatherFlask;
 import net.fabricmc.fabric.api.transfer.v1.context.ContainerItemContext;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage;
@@ -84,7 +83,7 @@ public class BambooPumpEntity extends BlockEntity implements Inventory {
                 fluidStorage = ContainerItemContext.ofSingleSlot(singleSlotStorage).find(FluidStorage.ITEM);
             }
             if (fluidStorage != null && fluidStorage.supportsInsertion()) {
-                long amount = pumpCount * FluidConstants.BOTTLE;
+                long amount = pumpCount * FluidConstants.BOTTLE * 2;
                 try (Transaction transaction = Transaction.openOuter()) {
                     if (fluidStorage.insert(FluidVariant.of(FluidInit.PURIFIED_WATER), amount, transaction) > 0) {
                         transaction.commit();
@@ -92,13 +91,6 @@ public class BambooPumpEntity extends BlockEntity implements Inventory {
                         cooldown = ConfigInit.CONFIG.pump_cooldown;
                     }
                 }
-            } else if (itemStack.getItem() instanceof LeatherFlask) {
-                if (!this.world.isClient()) {
-                    LeatherFlask.fillFlask(itemStack, 2);
-                    setStack(0, itemStack);
-                }
-                pumpCount = 0;
-                cooldown = ConfigInit.CONFIG.pump_cooldown;
             }
         }
     }
