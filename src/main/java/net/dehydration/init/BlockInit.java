@@ -1,7 +1,12 @@
 package net.dehydration.init;
 
-import net.dehydration.block.*;
-import net.dehydration.block.entity.*;
+import net.dehydration.block.BambooPumpBlock;
+import net.dehydration.block.CampfireCauldronBlock;
+import net.dehydration.block.CopperCauldronBlock;
+import net.dehydration.block.CopperLeveledCauldronBlock;
+import net.dehydration.block.entity.BambooPumpEntity;
+import net.dehydration.block.entity.CampfireCauldronEntity;
+import net.dehydration.block.entity.CopperCauldronBehavior;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;

@@ -1,16 +1,15 @@
 package net.dehydration.block;
 
-import java.util.List;
-
-import org.jetbrains.annotations.Nullable;
-
 import com.mojang.serialization.MapCodec;
-
 import net.dehydration.block.entity.BambooPumpEntity;
 import net.dehydration.init.BlockInit;
 import net.dehydration.init.ConfigInit;
 import net.dehydration.init.ItemInit;
 import net.dehydration.item.LeatherFlask;
+import net.fabricmc.fabric.api.transfer.v1.context.ContainerItemContext;
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage;
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
+import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockRenderType;
 import net.minecraft.block.BlockState;
@@ -31,8 +30,8 @@ import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.loot.context.LootContextParameters;
 import net.minecraft.loot.context.LootContextParameterSet.Builder;
+import net.minecraft.loot.context.LootContextParameters;
 import net.minecraft.registry.tag.FluidTags;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
@@ -54,6 +53,9 @@ import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldAccess;
 import net.minecraft.world.WorldView;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.List;
 
 @SuppressWarnings("deprecation")
 public class BambooPumpBlock extends BlockWithEntity {
@@ -87,7 +89,8 @@ public class BambooPumpBlock extends BlockWithEntity {
             ItemStack itemStack = bambooPumpEntity.getStack(0);
             ItemStack itemStack2 = player.getStackInHand(hand);
             if (itemStack.isEmpty()) {
-                if (itemStack2.isOf(Items.BUCKET) || itemStack2.isOf(Items.GLASS_BOTTLE) || (itemStack2.getItem() instanceof LeatherFlask && !LeatherFlask.isFlaskFull(itemStack2))) {
+                Storage<FluidVariant> storage = ContainerItemContext.withConstant(itemStack2).find(FluidStorage.ITEM);
+                if ((storage != null && storage.supportsInsertion()) || (itemStack2.getItem() instanceof LeatherFlask && !LeatherFlask.isFlaskFull(itemStack2))) {
                     if (!world.isClient()) {
                         if (player.isCreative()) {
                             bambooPumpEntity.setStack(0, itemStack2.copy());
@@ -118,7 +121,8 @@ public class BambooPumpBlock extends BlockWithEntity {
                     }
                     return ItemActionResult.success(world.isClient());
                 }
-                if (itemStack.isOf(Items.BUCKET) || itemStack.isOf(Items.GLASS_BOTTLE) || (itemStack.getItem() instanceof LeatherFlask && !LeatherFlask.isFlaskFull(itemStack))) {
+                Storage<FluidVariant> storage = ContainerItemContext.withConstant(itemStack).find(FluidStorage.ITEM);
+                if ((storage != null && storage.supportsInsertion()) || (itemStack.getItem() instanceof LeatherFlask && !LeatherFlask.isFlaskFull(itemStack))) {
                     if (ConfigInit.CONFIG.pump_requires_water) {
                         boolean foundWater = false;
                         for (int i = 0; i < 50; i++) {
