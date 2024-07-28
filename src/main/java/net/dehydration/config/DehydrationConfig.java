@@ -12,7 +12,7 @@ public class DehydrationConfig implements ConfigData {
     @Comment("Defines the damage taken every 4 seconds")
     public float thirst_damage = 1.0F;
     @Comment("Defines speed of dehydration, bigger value = slower depletion")
-    public float hydrating_factor = 1.5F;
+    public float hydrating_factor = 1.6F;
     @Comment("Defines the rate of the thirst effect's drain, smaller variable = less draining")
     public float thirst_effect_factor = 0.05F;
     @ConfigEntry.BoundedDiscrete(min = 0, max = 20)
@@ -64,11 +64,11 @@ public class DehydrationConfig implements ConfigData {
     @ConfigEntry.BoundedDiscrete(min = 0, max = 20)
     public int sleep_hunger_consumption = 2;
     @Comment("boiling time in ticks")
-    public int water_boiling_time = 100;
+    public int water_boiling_time = 200;
     @Comment("pump cooldown in ticks 0 = no cooldown")
     public int pump_cooldown = 1200;
     @Comment("Pump requires water below 10 blocks within 50 blocks")
-    public boolean pump_requires_water = false;
+    public boolean pump_requires_water = true;
     public boolean bottle_consumes_source_block = false;
     @Comment("Haste and fatique on low hydration")
     public boolean special_effects = false;
