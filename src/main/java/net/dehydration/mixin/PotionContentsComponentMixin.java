@@ -24,10 +24,12 @@ public class PotionContentsComponentMixin {
     @SuppressWarnings("deprecation")
     @Inject(method = "Lnet/minecraft/component/type/PotionContentsComponent;getColor()I", at = @At("HEAD"), cancellable = true)
     private void getColorMixin(CallbackInfoReturnable<Integer> info) {
-        if(this.potion() == null)
+        if (this.potion() == null || !this.potion().isPresent() || this.potion().get() == null) {
             return;
-        if (this.potion().get().matches(ItemInit.PURIFIED_WATER))
+        }
+        if (this.potion().get().matches(ItemInit.PURIFIED_WATER)) {
             info.setReturnValue(3708358);
+        }
     }
 
 }

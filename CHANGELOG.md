@@ -1,6 +1,6 @@
 ### Added:
 - 
 ### Fixed:
-- Fixed purified water render
+- Fixed potion crash
 ### Changed:
-- Updated to mc 1.21
+- 
