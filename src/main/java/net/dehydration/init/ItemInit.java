@@ -57,7 +57,7 @@ public class ItemInit {
     public static final Item PURIFIED_BUCKET = register("purified_water_bucket", new BucketItem(FluidInit.PURIFIED_WATER, new Item.Settings().recipeRemainder(Items.BUCKET).maxCount(1)));
     // Bowl
     public static final Item WATER_BOWL = register("water_bowl", new WaterBowlItem(new Item.Settings().maxCount(1), true));
-    public static final Item PURIFIED_WATER_BOWL = register("purified_water_bowl", new WaterBowlItem(new Item.Settings().maxCount(1), true));
+    public static final Item PURIFIED_WATER_BOWL = register("purified_water_bowl", new WaterBowlItem(new Item.Settings().maxCount(1), false));
 
     private static Item register(String name, Item item) {
         ItemGroupEvents.modifyEntriesEvent(DEHYDRATION_ITEM_GROUP).register(entries -> entries.add(item));
@@ -82,7 +82,7 @@ public class ItemInit {
         for (Identifier id : ITEMS.keySet()) {
             Registry.register(Registries.ITEM, id, ITEMS.get(id));
         }
-        //register item storage for bamboo pump
+        // register item storage for bamboo pump
         ItemStorage.SIDED.registerForBlockEntities((blockEntity, context) -> new BambooPumpItemStorage((BambooPumpEntity) blockEntity), BlockInit.BAMBOO_PUMP_ENTITY);
     }
 

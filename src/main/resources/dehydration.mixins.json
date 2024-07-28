@@ -19,6 +19,7 @@
     "GlassBottleItemMixin",
     "PlayerScreenHandlerMixin",
     "PotionContentsComponentMixin",
+    "PotionItemMixin",
     "accessor.CampfireBlockEntityAccessor"
   ],
   "client": [
